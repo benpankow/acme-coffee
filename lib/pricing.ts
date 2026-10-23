@@ -38,13 +38,12 @@ export function discountAmount(lines: readonly CartLine[], discount?: DiscountCo
   return Math.round((subtotal(lines) * discount.percentOff) / 100);
 }
 
-/** How much more the customer needs to spend for free shipping, after discounts. */
-export function amountUntilFreeShipping(
-  lines: readonly CartLine[],
-  discount?: DiscountCode,
-): number {
-  const discounted = subtotal(lines) - discountAmount(lines, discount);
-  return Math.max(0, FREE_SHIPPING_THRESHOLD - discounted);
+/**
+ * How much more the customer needs to spend for free shipping, given the
+ * subtotal after discounts. Used by both the cart banner and checkout.
+ */
+export function amountUntilFreeShipping(discountedSubtotal: number): number {
+  return Math.max(0, FREE_SHIPPING_THRESHOLD - discountedSubtotal);
 }
 
 export interface OrderSummary {
@@ -60,7 +59,7 @@ export function orderSummary(lines: readonly CartLine[], discount?: DiscountCode
   const off = discountAmount(lines, discount);
   const discounted = merchandise - off;
   const shipping =
-    merchandise === 0 || amountUntilFreeShipping(lines, discount) === 0 ? 0 : FLAT_SHIPPING;
+    merchandise === 0 || amountUntilFreeShipping(discounted) === 0 ? 0 : FLAT_SHIPPING;
   const tax = Math.round(discounted * TAX_RATE);
   return {
     subtotal: merchandise,
