@@ -62,15 +62,11 @@ describe("orderSummary", () => {
 
 describe("amountUntilFreeShipping", () => {
   it("counts down to the threshold", () => {
-    expect(amountUntilFreeShipping([{ productId: "house-blend", quantity: 1 }])).toBe(3200);
+    expect(amountUntilFreeShipping(1800)).toBe(3200);
   });
 
-  it("counts down from the discounted subtotal", () => {
-    const cart = [
-      { productId: "pour-over-kit", quantity: 1 },
-      { productId: "house-blend", quantity: 1 },
-    ];
-    expect(amountUntilFreeShipping(cart, findDiscount("BREW20"))).toBe(200);
+  it("is zero at exactly the threshold", () => {
+    expect(amountUntilFreeShipping(5000)).toBe(0);
   });
 });
 
@@ -80,8 +76,9 @@ describe("free shipping banner and checkout agree", () => {
       { productId: "house-blend", quantity: 1 },
       { productId: "decaf-colombia", quantity: 2 },
     ];
-    expect(amountUntilFreeShipping(cart)).toBe(0);
-    expect(orderSummary(cart).shipping).toBe(0);
+    const summary = orderSummary(cart);
+    expect(amountUntilFreeShipping(summary.subtotal - summary.discount)).toBe(0);
+    expect(summary.shipping).toBe(0);
   });
 
   it("charges shipping when a discount drops the order below $50", () => {
@@ -89,9 +86,9 @@ describe("free shipping banner and checkout agree", () => {
       { productId: "pour-over-kit", quantity: 1 },
       { productId: "house-blend", quantity: 1 },
     ];
-    const brew20 = findDiscount("BREW20");
-    expect(amountUntilFreeShipping(cart, brew20)).toBeGreaterThan(0);
-    expect(orderSummary(cart, brew20).shipping).toBe(FLAT_SHIPPING);
+    const summary = orderSummary(cart, findDiscount("BREW20"));
+    expect(amountUntilFreeShipping(summary.subtotal - summary.discount)).toBe(200);
+    expect(summary.shipping).toBe(FLAT_SHIPPING);
   });
 });
 
