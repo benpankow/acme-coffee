@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  amountUntilFreeShipping,
   findDiscount,
   FLAT_SHIPPING,
   formatPrice,
@@ -62,7 +61,9 @@ describe("orderSummary", () => {
 
 describe("amountUntilFreeShipping", () => {
   it("counts down to the threshold", () => {
-    expect(amountUntilFreeShipping([{ productId: "house-blend", quantity: 1 }])).toBe(3200);
+    expect(orderSummary([{ productId: "house-blend", quantity: 1 }]).amountUntilFreeShipping).toBe(
+      3200,
+    );
   });
 
   it("counts the discounted total, not the subtotal", () => {
@@ -70,7 +71,7 @@ describe("amountUntilFreeShipping", () => {
       { productId: "pour-over-kit", quantity: 1 },
       { productId: "house-blend", quantity: 1 },
     ];
-    expect(amountUntilFreeShipping(lines, findDiscount("BREW20"))).toBe(5000 - 4800);
+    expect(orderSummary(lines, findDiscount("BREW20")).amountUntilFreeShipping).toBe(5000 - 4800);
   });
 });
 
@@ -80,8 +81,9 @@ describe("free shipping policy: $50 or more, after discounts", () => {
       { productId: "house-blend", quantity: 1 },
       { productId: "decaf-colombia", quantity: 2 },
     ];
-    expect(orderSummary(lines).shipping).toBe(0);
-    expect(amountUntilFreeShipping(lines)).toBe(0);
+    const summary = orderSummary(lines);
+    expect(summary.shipping).toBe(0);
+    expect(summary.amountUntilFreeShipping).toBe(0);
   });
 
   it("charges shipping when a discount drops the order below $50 and the banner agrees", () => {
@@ -89,9 +91,9 @@ describe("free shipping policy: $50 or more, after discounts", () => {
       { productId: "pour-over-kit", quantity: 1 },
       { productId: "house-blend", quantity: 1 },
     ];
-    const brew20 = findDiscount("BREW20");
-    expect(orderSummary(lines, brew20).shipping).toBe(FLAT_SHIPPING);
-    expect(amountUntilFreeShipping(lines, brew20)).toBeGreaterThan(0);
+    const summary = orderSummary(lines, findDiscount("BREW20"));
+    expect(summary.shipping).toBe(FLAT_SHIPPING);
+    expect(summary.amountUntilFreeShipping).toBeGreaterThan(0);
   });
 });
 
