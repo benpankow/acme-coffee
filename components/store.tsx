@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 
 import {
-  amountUntilFreeShipping,
   type CartLine,
   type DiscountCode,
   findDiscount,
@@ -20,7 +19,7 @@ export function Store({ products }: { products: readonly Product[] }) {
   const [placed, setPlaced] = useState(false);
 
   const summary = useMemo(() => orderSummary(cart, discount), [cart, discount]);
-  const remaining = amountUntilFreeShipping(cart);
+  const remaining = summary.amountUntilFreeShipping;
 
   function setQuantity(productId: string, quantity: number) {
     setPlaced(false);
