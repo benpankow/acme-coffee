@@ -64,6 +64,35 @@ describe("amountUntilFreeShipping", () => {
   it("counts down to the threshold", () => {
     expect(amountUntilFreeShipping([{ productId: "house-blend", quantity: 1 }])).toBe(3200);
   });
+
+  it("counts the discounted total, not the subtotal", () => {
+    const lines = [
+      { productId: "pour-over-kit", quantity: 1 },
+      { productId: "house-blend", quantity: 1 },
+    ];
+    expect(amountUntilFreeShipping(lines, findDiscount("BREW20"))).toBe(5000 - 4800);
+  });
+});
+
+describe("free shipping policy: $50 or more, after discounts", () => {
+  it("ships free at exactly $50 and the banner agrees", () => {
+    const lines = [
+      { productId: "house-blend", quantity: 1 },
+      { productId: "decaf-colombia", quantity: 2 },
+    ];
+    expect(orderSummary(lines).shipping).toBe(0);
+    expect(amountUntilFreeShipping(lines)).toBe(0);
+  });
+
+  it("charges shipping when a discount drops the order below $50 and the banner agrees", () => {
+    const lines = [
+      { productId: "pour-over-kit", quantity: 1 },
+      { productId: "house-blend", quantity: 1 },
+    ];
+    const brew20 = findDiscount("BREW20");
+    expect(orderSummary(lines, brew20).shipping).toBe(FLAT_SHIPPING);
+    expect(amountUntilFreeShipping(lines, brew20)).toBeGreaterThan(0);
+  });
 });
 
 describe("formatPrice", () => {
