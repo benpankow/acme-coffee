@@ -20,7 +20,7 @@ export function Store({ products }: { products: readonly Product[] }) {
   const [placed, setPlaced] = useState(false);
 
   const summary = useMemo(() => orderSummary(cart, discount), [cart, discount]);
-  const remaining = amountUntilFreeShipping(summary.subtotal - summary.discount);
+  const remaining = amountUntilFreeShipping(cart, discount);
 
   function setQuantity(productId: string, quantity: number) {
     setPlaced(false);
