@@ -58,37 +58,53 @@ describe("orderSummary", () => {
   it("is empty for an empty cart", () => {
     expect(orderSummary([]).total).toBe(0);
   });
-});
 
-describe("amountUntilFreeShipping", () => {
-  it("counts down to the threshold", () => {
-    expect(amountUntilFreeShipping(1800)).toBe(3200);
-  });
-
-  it("is zero at exactly the threshold", () => {
-    expect(amountUntilFreeShipping(5000)).toBe(0);
-  });
-});
-
-describe("free shipping banner and checkout agree", () => {
-  it("ships an order of exactly $50 free", () => {
-    const cart = [
+  it("ships free at exactly the $50 threshold", () => {
+    const summary = orderSummary([
       { productId: "house-blend", quantity: 1 },
       { productId: "decaf-colombia", quantity: 2 },
-    ];
-    const summary = orderSummary(cart);
-    expect(amountUntilFreeShipping(summary.subtotal - summary.discount)).toBe(0);
+    ]);
+    expect(summary.subtotal).toBe(5000);
     expect(summary.shipping).toBe(0);
   });
 
   it("charges shipping when a discount drops the order below $50", () => {
-    const cart = [
-      { productId: "pour-over-kit", quantity: 1 },
-      { productId: "house-blend", quantity: 1 },
-    ];
-    const summary = orderSummary(cart, findDiscount("BREW20"));
-    expect(amountUntilFreeShipping(summary.subtotal - summary.discount)).toBe(200);
+    const summary = orderSummary(
+      [
+        { productId: "pour-over-kit", quantity: 1 },
+        { productId: "house-blend", quantity: 1 },
+      ],
+      findDiscount("BREW20"),
+    );
+    expect(summary.subtotal - summary.discount).toBe(4800);
     expect(summary.shipping).toBe(FLAT_SHIPPING);
+  });
+});
+
+describe("amountUntilFreeShipping", () => {
+  it("counts down to the threshold", () => {
+    expect(amountUntilFreeShipping([{ productId: "house-blend", quantity: 1 }])).toBe(3200);
+  });
+
+  it("is zero at exactly the threshold", () => {
+    expect(
+      amountUntilFreeShipping([
+        { productId: "house-blend", quantity: 1 },
+        { productId: "decaf-colombia", quantity: 2 },
+      ]),
+    ).toBe(0);
+  });
+
+  it("counts the discount against the threshold", () => {
+    expect(
+      amountUntilFreeShipping(
+        [
+          { productId: "pour-over-kit", quantity: 1 },
+          { productId: "house-blend", quantity: 1 },
+        ],
+        findDiscount("BREW20"),
+      ),
+    ).toBe(200);
   });
 });
 
